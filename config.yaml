@@ -1,0 +1,8 @@
+bitstamp:
+  url: "https://www.bitstamp.net/api"
+  endpoints:
+    balance: "/v2/balance/"
+binance:
+  url: "https://api.binance.com"
+  endpoints:
+    balance: "/api/v3/account"
