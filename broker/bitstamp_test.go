@@ -1,6 +1,8 @@
 package broker
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -14,16 +16,35 @@ func (m *MockBitstampAccount) retrieveRawBalance() []byte {
 	return BitstampRawBalanceMock()
 }
 
+var stringBitstampResponse = `{
+	"btc_balance": "4723846.89208129",
+	"ltc_balance": "4763368.68006011",
+	"bch_balance": "0.00000000", 
+	"bch_reserved": "0.00000000"
+}`
+
+func TestRetrieveRawBitstampBalance(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(stringBitstampResponse))
+	}))
+	b := BitstampAccount{
+		CustomerID: "test",
+		Key:        "test",
+		Secret:     []byte("secret"),
+		URL:        srv.URL,
+		Endpoints:  map[string]string{"bitstamp": "/balance"},
+	}
+	_, err := b.retrieveRawBalance()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestFormatBitstampBalance(t *testing.T) {
 
 	BitstampRawBalanceMock = func() []byte {
-		stringResponse := `{
-			"btc_balance": "4723846.89208129",
-			"ltc_balance": "4763368.68006011",
-			"bch_balance": "0.00000000", 
-			"bch_reserved": "0.00000000"
-		}`
-		return []byte(stringResponse)
+		return []byte(stringBitstampResponse)
 	}
 
 	expected := []Crypto{

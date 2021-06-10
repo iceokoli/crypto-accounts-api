@@ -22,7 +22,7 @@ func (b BinanceAccount) generateURL(endpoint, msg, signature string) string {
 	return fmt.Sprintf("%s%s?%s&signature=%s", b.URL, endpoint, msg, signature)
 }
 
-func (b BinanceAccount) retrieveRawBalance() []byte {
+func (b BinanceAccount) retrieveRawBalance() ([]byte, error) {
 	timestamp := strconv.FormatInt(time.Now().Unix()*1000, 10)
 
 	params := url.Values{}
@@ -35,22 +35,22 @@ func (b BinanceAccount) retrieveRawBalance() []byte {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", apiUrl, nil)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	req.Header.Add("X-MBX-APIKEY", b.Key)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	responceBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
-	return responceBody
+	return responceBody, nil
 }
 
 func (b BinanceAccount) formatBalance(raw []byte) []Crypto {
@@ -76,7 +76,10 @@ func (b BinanceAccount) formatBalance(raw []byte) []Crypto {
 }
 
 func (b BinanceAccount) GetBalance() []Crypto {
-	rawBalance := b.retrieveRawBalance()
+	rawBalance, err := b.retrieveRawBalance()
+	if err != nil {
+		log.Printf("Failed to retrieve raw binance balance %s\n", err)
+	}
 	cleanBalance := b.formatBalance(rawBalance)
 
 	return cleanBalance

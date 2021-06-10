@@ -56,7 +56,7 @@ func (b BitstampAccount) addHeaders(r *http.Request, auth bitstampAuth, version 
 	r.Header.Add("Content-Type", "")
 }
 
-func (b BitstampAccount) retrieveRawBalance() []byte {
+func (b BitstampAccount) retrieveRawBalance() ([]byte, error) {
 	version := "v2"
 	auth := b.authenticate(b.Endpoints["balance"], version)
 	apiUrl := b.URL + b.Endpoints["balance"]
@@ -64,22 +64,22 @@ func (b BitstampAccount) retrieveRawBalance() []byte {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", apiUrl, nil)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	b.addHeaders(req, auth, version)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	responceBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
-	return responceBody
+	return responceBody, nil
 }
 
 func (b BitstampAccount) formatBalance(raw []byte) []Crypto {
@@ -109,7 +109,10 @@ func (b BitstampAccount) formatBalance(raw []byte) []Crypto {
 
 func (b BitstampAccount) GetBalance() []Crypto {
 
-	raw := b.retrieveRawBalance()
+	raw, err := b.retrieveRawBalance()
+	if err != nil {
+		log.Printf("Failed to get raw bitstamp balance: %s", err)
+	}
 	cleanBalance := b.formatBalance(raw)
 
 	return cleanBalance
