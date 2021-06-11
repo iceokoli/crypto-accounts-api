@@ -6,11 +6,25 @@ import (
 	"github.com/iceokoli/get-crypto-balance/broker"
 )
 
-type Portfolio struct {
+type CryptoPortfolio interface {
+	GetBalanceByBroker(string) ([]broker.Crypto, bool)
+	GetSegregatedBalance() map[string][]broker.Crypto
+	GetAggregatedBalance() []broker.Crypto
+}
+
+type MyCryptoPortfolio struct {
 	Accounts map[string]broker.CryptoAccount
 }
 
-func (p Portfolio) GetSegregatedBalance() map[string][]broker.Crypto {
+func (p MyCryptoPortfolio) GetBalanceByBroker(broker string) ([]broker.Crypto, bool) {
+	api, ok := p.Accounts[broker]
+	if !ok {
+		return nil, ok
+	}
+	return api.GetBalance(), true
+}
+
+func (p MyCryptoPortfolio) GetSegregatedBalance() map[string][]broker.Crypto {
 
 	balance := map[string][]broker.Crypto{}
 	var wg sync.WaitGroup
@@ -28,7 +42,7 @@ func (p Portfolio) GetSegregatedBalance() map[string][]broker.Crypto {
 	return balance
 }
 
-func (p Portfolio) GetAggregatedBalance() []broker.Crypto {
+func (p MyCryptoPortfolio) GetAggregatedBalance() []broker.Crypto {
 
 	balance := p.GetSegregatedBalance()
 
@@ -56,6 +70,6 @@ func (p Portfolio) GetAggregatedBalance() []broker.Crypto {
 	return totalBalance
 }
 
-func New(accounts map[string]broker.CryptoAccount) Portfolio {
-	return Portfolio{Accounts: accounts}
+func New(accounts map[string]broker.CryptoAccount) MyCryptoPortfolio {
+	return MyCryptoPortfolio{Accounts: accounts}
 }

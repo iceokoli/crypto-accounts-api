@@ -20,7 +20,7 @@ var accounts = map[string]broker.CryptoAccount{
 	"broker2": MockBroker{},
 }
 
-var pfolio = Portfolio{Accounts: accounts}
+var pfolio = MyCryptoPortfolio{Accounts: accounts}
 
 func TestGetSegregatedBalance(t *testing.T) {
 

@@ -17,7 +17,7 @@ type authorised struct {
 
 var perms *authorised
 
-func New(pfolio portfolio.Portfolio, env map[string]string) *Server {
+func New(pfolio portfolio.MyCryptoPortfolio, env map[string]string) *Server {
 	perms = &authorised{user: env["SERVER_AUTH_KEY"], secret: []byte(env["SERVER_AUTH_SECRET"])}
 	s := &Server{Router: mux.NewRouter(), Portfolio: pfolio}
 	s.setUpMiddleWare()
@@ -27,7 +27,7 @@ func New(pfolio portfolio.Portfolio, env map[string]string) *Server {
 
 type Server struct {
 	*mux.Router
-	Portfolio portfolio.Portfolio
+	Portfolio portfolio.CryptoPortfolio
 }
 
 func (s *Server) setUpMiddleWare() {
@@ -83,9 +83,9 @@ func (s *Server) GetLocalBalanceByBroker() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 
-		var balanceApi broker.CryptoAccount
+		var balance []broker.Crypto
 		var ok bool
-		if balanceApi, ok = s.Portfolio.Accounts[params["broker"]]; !ok {
+		if balance, ok = s.Portfolio.GetBalanceByBroker(params["broker"]); !ok {
 			clientError := NewHTTPError(nil, 400, "Invalid broker: Choose a valid crypto broker")
 			s.handleError(clientError, w, r)
 			log.Println(clientError.Error())
@@ -93,8 +93,6 @@ func (s *Server) GetLocalBalanceByBroker() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		balance := balanceApi.GetBalance()
-
 		balanceJSON, err := json.Marshal(balance)
 		if err != nil {
 			log.Println(err)
