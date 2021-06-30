@@ -9,15 +9,10 @@ import (
 type Config struct {
 	Bitstamp struct {
 		URL       string            `yaml:"url"`
-		ID        string            `yaml:"id"`
-		Key       string            `yaml:"key"`
-		Secret    string            `yaml:"secret"`
 		Endpoints map[string]string `yaml:"endpoints"`
 	} `yaml:"bitstamp"`
 	Binance struct {
 		URL       string            `yaml:"url"`
-		Key       string            `yaml:"key"`
-		Secret    string            `yaml:"secret"`
 		Endpoints map[string]string `yaml:"endpoints"`
 	} `yaml:"binance"`
 }
