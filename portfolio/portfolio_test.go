@@ -20,9 +20,12 @@ var accounts = map[string]broker.CryptoAccount{
 	"broker2": MockBroker{},
 }
 
-var pfolio = MyCryptoPortfolio{Accounts: accounts}
-
 func TestGetSegregatedBalance(t *testing.T) {
+
+	var pfolio = MyCryptoPortfolio{}
+	for k, v := range accounts {
+		pfolio.AddAccount(k, v)
+	}
 
 	actual := pfolio.GetSegregatedBalance()
 	expected := map[string][]broker.Crypto{
@@ -59,6 +62,11 @@ func TestGetSegregatedBalance(t *testing.T) {
 }
 
 func TestGetAggregatedBalance(t *testing.T) {
+
+	var pfolio = MyCryptoPortfolio{}
+	for k, v := range accounts {
+		pfolio.AddAccount(k, v)
+	}
 
 	actual := pfolio.GetAggregatedBalance()
 	expected := []broker.Crypto{

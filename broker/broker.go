@@ -34,8 +34,7 @@ func GenerateSignature(msg string, secret []byte) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func New(cfg config.Config, env map[string]string) map[string]CryptoAccount {
-
+func NewBitstamp(cfg config.Config, env map[string]string) CryptoAccount {
 	bitstamp := BitstampAccount{
 		CustomerID: env["BITSTAMP_ID"],
 		Key:        env["BITSTAMP_KEY"],
@@ -44,16 +43,16 @@ func New(cfg config.Config, env map[string]string) map[string]CryptoAccount {
 		Endpoints:  cfg.Bitstamp.Endpoints,
 	}
 
+	return bitstamp
+}
+
+func NewBinance(cfg config.Config, env map[string]string) CryptoAccount {
 	binance := BinanceAccount{
 		Key:       env["BINANCE_KEY"],
 		Secret:    []byte(env["BINANCE_SECRET"]),
 		URL:       cfg.Binance.URL,
 		Endpoints: cfg.Binance.Endpoints,
 	}
-	accounts := map[string]CryptoAccount{
-		"bitstamp": bitstamp,
-		"binance":  binance,
-	}
 
-	return accounts
+	return binance
 }

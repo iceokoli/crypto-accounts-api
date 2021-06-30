@@ -16,20 +16,29 @@ import (
 const portNumber = ":8080"
 
 func main() {
+	// Get config for the crypto exchange apis (url, endpoints and etc.)
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Println("Failed to load config", err)
 	}
 
+	// Get environment variable for authentication with apis (key, secrets and etc.)
 	envVariables, err := loadEnvVariables()
 	if err != nil {
 		log.Println("Failed to load environment variables", err)
 	}
 
-	accounts := broker.New(cfg, envVariables)
-	pfolio := portfolio.New(accounts)
-	srv := server.New(pfolio, envVariables)
+	// instantiate broker accounts
+	bitstamp := broker.NewBitstamp(cfg, envVariables)
+	binance := broker.NewBinance(cfg, envVariables)
 
+	// instatiate portfolio and add broker accounts
+	pfolio := portfolio.MyCryptoPortfolio{}
+	pfolio.AddAccount("bitstamp", bitstamp)
+	pfolio.AddAccount("binance", binance)
+
+	// Start up API Server
+	srv := server.New(pfolio, envVariables)
 	log.Printf("Starting Server on port %s\n", portNumber)
 	if err := http.ListenAndServe(portNumber, srv); err != nil {
 		log.Println(err)

@@ -16,6 +16,13 @@ type MyCryptoPortfolio struct {
 	Accounts map[string]broker.CryptoAccount
 }
 
+func (p *MyCryptoPortfolio) AddAccount(name string, account broker.CryptoAccount) {
+	if p.Accounts == nil {
+		p.Accounts = map[string]broker.CryptoAccount{}
+	}
+	p.Accounts[name] = account
+}
+
 func (p MyCryptoPortfolio) GetBalanceByBroker(broker string) ([]broker.Crypto, bool) {
 	api, ok := p.Accounts[broker]
 	if !ok {
@@ -68,8 +75,4 @@ func (p MyCryptoPortfolio) GetAggregatedBalance() []broker.Crypto {
 	}
 
 	return totalBalance
-}
-
-func New(accounts map[string]broker.CryptoAccount) MyCryptoPortfolio {
-	return MyCryptoPortfolio{Accounts: accounts}
 }
